@@ -6,33 +6,14 @@ const compression = require('compression')
 const awsServerlessExpressMiddleware = require('aws-serverless-express/middleware')
 const app = express()
 
-app.set('view engine', 'pug')
 app.use(compression())
 app.use(cors())
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(awsServerlessExpressMiddleware.eventContext())
 
-app.get('/', (req, res) => {
-  res.render('index', {
-    apiUrl: req.apiGateway ? `https://${req.apiGateway.event.headers.Host}/${req.apiGateway.event.requestContext.stage}` : 'http://localhost:3000'
-  })
-})
-
-app.get('/sam', (req, res) => {
-  res.sendFile(`${__dirname}/sam-logo.png`)
-})
-
 app.get('/users', (req, res) => {
   res.json(users)
-})
-
-app.get('/users/:userId', (req, res) => {
-  const user = getUser(req.params.userId)
-
-  if (!user) return res.status(404).json({})
-
-  return res.json(user)
 })
 
 app.post('/users', (req, res) => {
@@ -44,26 +25,8 @@ app.post('/users', (req, res) => {
   res.status(201).json(user)
 })
 
-app.put('/users/:userId', (req, res) => {
-  const user = getUser(req.params.userId)
-
-  if (!user) return res.status(404).json({})
-
-  user.name = req.body.name
-  res.json(user)
-})
-
-app.delete('/users/:userId', (req, res) => {
-  const userIndex = getUserIndex(req.params.userId)
-
-  if(userIndex === -1) return res.status(404).json({})
-
-  users.splice(userIndex, 1)
-  res.json(users)
-})
 
 const getUser = (userId) => users.find(u => u.id === parseInt(userId))
-const getUserIndex = (userId) => users.findIndex(u => u.id === parseInt(userId))
 
 // Ephemeral in-memory data store
 const users = [{
