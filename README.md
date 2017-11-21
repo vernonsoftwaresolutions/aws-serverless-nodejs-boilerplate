@@ -1,10 +1,10 @@
 ## Example
 
 This project is based on the AWSLabs Servless project for Nodejs Express applications and AWS Lambda
-(https://github.com/awslabs/aws-serverless-express) [awslabs aws-serverless-express]
+[awslabs aws-serverless-express] (https://github.com/awslabs/aws-serverless-express) 
 
-This is based on the quick start guide found under the example folder
-(https://github.com/awslabs/aws-serverless-express/tree/master/example), [example]
+It builds on top of the quick start guide found under the example folder
+[example] (https://github.com/awslabs/aws-serverless-express/tree/master/example)
 
 In addition to a basic Lambda function and Express server, the `example` directory includes a [Swagger file](http://swagger.io/specification/), [CloudFormation template](https://aws.amazon.com/cloudformation/aws-cloudformation-templates/) with [Serverless Application Model (SAM)](https://github.com/awslabs/serverless-application-model), and helper scripts to help you set up and manage your application.
 
