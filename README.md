@@ -1,6 +1,6 @@
 ## Todo
-Note 11/21/2017, there is a pending [bug] (https://github.com/serverless/serverless/issues/2233) with 
-[Serverless Application Model (SAM)] (https://github.com/awslabs/serverless-application-model) and Usage Plan's in cloudformation.  There is a work around that will be added shortly
+Note 11/21/2017, there is a pending [bug](https://github.com/serverless/serverless/issues/2233) with 
+[Serverless Application Model (SAM)](https://github.com/awslabs/serverless-application-model) and Usage Plan's in cloudformation.  There is a work around that will be added shortly
 
 ## Known Issues
 1. Based on AWS SAM bug, this template will not currently deploy until work around is implemented
@@ -8,10 +8,10 @@ Note 11/21/2017, there is a pending [bug] (https://github.com/serverless/serverl
 ## Example
 
 This project is based on the AWSLabs Servless project for Nodejs Express applications and AWS Lambda
-[awslabs aws-serverless-express] (https://github.com/awslabs/aws-serverless-express) 
+[awslabs aws-serverless-express](https://github.com/awslabs/aws-serverless-express) 
 
 It builds on top of the quick start guide found under the example folder
-[example] (https://github.com/awslabs/aws-serverless-express/tree/master/example)
+[example](https://github.com/awslabs/aws-serverless-express/tree/master/example)
 
 In addition to a basic Lambda function and Express server, the  project includes a [Swagger file](http://swagger.io/specification/), [CloudFormation template](https://aws.amazon.com/cloudformation/aws-cloudformation-templates/) with [Serverless Application Model (SAM)](https://github.com/awslabs/serverless-application-model), and helper scripts to help you set up and manage your application.
 
@@ -19,7 +19,7 @@ In addition to a basic Lambda function and Express server, the  project includes
 
 In additional to the awslabs boilerplate this also contains the needed cloudformation configuration to create separate environments (stages) for a CI process, integration with aws Route 53 for friendly API naming, as well as an example Usage Plan for distributing API's
 
-This required changes to the scripts [configure.js](https://github.com/vernonsoftwaresolutions/aws-serverless-nodejs-boilerplate/blob/master/scripts/configure.js) [deconfigure.js](https://github.com/vernonsoftwaresolutions/aws-serverless-nodejs-boilerplate/blob/master/scripts/deconfigure.js) [package.json](https://github.com/vernonsoftwaresolutions/aws-serverless-nodejs-boilerplate/blob/master/package.json) files to add the additional parameters (hostedzone, dnsname, and stage) to the [cloudformation template] (https://github.com/vernonsoftwaresolutions/aws-serverless-nodejs-boilerplate/blob/master/cloudformation.yaml) for deployment
+This required changes to the scripts [configure.js](https://github.com/vernonsoftwaresolutions/aws-serverless-nodejs-boilerplate/blob/master/scripts/configure.js) [deconfigure.js](https://github.com/vernonsoftwaresolutions/aws-serverless-nodejs-boilerplate/blob/master/scripts/deconfigure.js) [package.json](https://github.com/vernonsoftwaresolutions/aws-serverless-nodejs-boilerplate/blob/master/package.json) files to add the additional parameters (hostedzone, dnsname, and stage) to the [cloudformation template](https://github.com/vernonsoftwaresolutions/aws-serverless-nodejs-boilerplate/blob/master/cloudformation.yaml) for deployment
 
 ### Pre-Req's for running the example
 This guide assumes you already have
