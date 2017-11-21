@@ -23,6 +23,10 @@ Parameters:
     Description: stage that can be added to resource names
 
 Resources:
+###############################################
+## DNS AND CERTIFICATE DEFINITIONS
+##
+###############################################
 
   Certificate:
     Type: AWS::CertificateManager::Certificate
@@ -47,22 +51,124 @@ Resources:
         AliasTarget:
           HostedZoneId: Z2FDTNDATAQYW2 # This is hardcoded for all CloudFormation templates
           dnsname: !GetAtt DomainName.DistributionDomainName
-
+###############################################
+## API GATEWAY AND LAMBDA FUNCTION DEFINITIONS
+##
+###############################################
+  AwsServerlessExpressFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: lambda.handler
+      MemorySize: 1024
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Runtime: nodejs6.10
+      Timeout: 30
+      Environment:
+        Variables:
+          ENVIRONMENT: !Ref stage
+      Events:
+        ProxyApiRoot:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /
+            Method: ANY
+        ProxyApiGreedy:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /{proxy+}
+            Method: ANY
   ApiGateway:
     Type: AWS::Serverless::Api
     Properties:
       DefinitionUri: ./simple-proxy-api.yaml
+      #StageName: DUMMY
       StageName: !Ref stage
       Variables:
         ServerlessExpressLambdaFunctionName: !Ref YOUR_SERVERLESS_EXPRESS_LAMBDA_FUNCTION_NAME
   
   UrlMapping:
     Type: AWS::ApiGateway::BasePathMapping
+    DependsOn: 
+      - ApiGateway
     Properties:
       DomainName: !Ref DomainName
       RestApiId: !Ref ApiGateway
       Stage: !Ref stage
 
+  # Deployment:
+  #   Type: AWS::ApiGateway::Deployment
+  #   Properties:
+  #     Description: !Sub Deployment for ${stage}
+  #     RestApiId: !Ref ApiGateway
+  #     StageName: !Ref stage
+
+  # ApiGatewayStage:
+  #   Type: AWS::ApiGateway::Stage
+  #   Properties:
+  #     StageName: !Ref stage
+  #     RestApiId: !Ref ApiGateway
+  #     DeploymentId: !Ref Deployment
+  #     Variables:
+  #       env: !Ref stage
+  #     #note-this requires api gateway to have appropriate role
+  #     MethodSettings:
+  #       - DataTraceEnabled: true
+  #         HttpMethod: "*"
+  #         LoggingLevel: INFO
+  #         ResourcePath: "/*"
+  #         MetricsEnabled: true
+###############################################
+## SAMPLE USAGE PLAN TO DEMONSTRATE THROTTLING
+##
+###############################################
+
+  UsagePlan:
+    Type: AWS::ApiGateway::UsagePlan
+    DependsOn: 
+      - UrlMapping
+    Properties:
+      ApiStages:
+      - ApiId: !Ref ApiGateway
+        Stage: !Ref stage
+      Description: Customer ABC's usage plan
+      Quota:
+        Limit: 5000
+        Period: MONTH
+      Throttle:
+        BurstLimit: 2
+        RateLimit: 1
+      UsagePlanName: Plan_ABC
+  
+  ## USAGE PLAN KEY
+  UsagePlanKey:
+    Type: "AWS::ApiGateway::UsagePlanKey"
+    DependsOn: 
+      - ApiGateway
+    Properties : 
+      KeyId: !Ref ApiKey
+      KeyType: API_KEY
+      UsagePlanId: !Ref UsagePlan
+
+  ## API KEY
+  ApiKey: 
+    Type: "AWS::ApiGateway::ApiKey"
+    DependsOn: 
+      - UrlMapping
+    Properties: 
+      Name: AbcApiKey
+      Description: "CloudFormation API Key V1"
+      Enabled: true
+      StageKeys: 
+        - RestApiId: 
+            Ref: ApiGateway
+          StageName: !Ref stage
+###############################################
+## LAMBDA PERMISSION ROLES
+##
+###############################################
   LambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
@@ -102,31 +208,6 @@ Resources:
           - !Ref ApiGateway
           - "/*/*"
 
-  YOUR_SERVERLESS_EXPRESS_LAMBDA_FUNCTION_NAME:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: ./
-      Handler: lambda.handler
-      MemorySize: 1024
-      Role: !GetAtt LambdaExecutionRole.Arn
-      Runtime: nodejs6.10
-      Timeout: 30
-      Environment:
-        Variables:
-          ENVIRONMENT: !Ref stage
-      Events:
-        ProxyApiRoot:
-          Type: Api
-          Properties:
-            RestApiId: !Ref ApiGateway
-            Path: /
-            Method: ANY
-        ProxyApiGreedy:
-          Type: Api
-          Properties:
-            RestApiId: !Ref ApiGateway
-            Path: /{proxy+}
-            Method: ANY
 
 Outputs:
   LambdaFunctionConsoleUrl:
