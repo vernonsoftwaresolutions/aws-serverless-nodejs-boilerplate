@@ -17,4 +17,13 @@ modifyFiles(['./simple-proxy-api.yaml', './package.json', './cloudformation.yaml
 }, {
     regexp: new RegExp(config.functionName, 'g'),
     replacement: 'YOUR_SERVERLESS_EXPRESS_LAMBDA_FUNCTION_NAME'
+}, {
+    regexp: new RegExp(config.hostedzonename, 'g'),
+    replacement: 'YOUR_HOSTED_ZONE_NAME'
+}, {
+    regexp: new RegExp(config.dnsname, 'g'),
+    replacement: 'YOUR_DNS_NAME'
+}, {
+    regexp: new RegExp(config.stage, 'g'),
+    replacement: 'YOUR_STAGE'
 }])

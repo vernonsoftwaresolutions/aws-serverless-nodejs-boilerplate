@@ -2,14 +2,66 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: Serverless Express Application/API powered by API Gateway and Lambda
+
+Parameters:
+
+  dnsname:
+    Type: String
+    Description: Name of Moodle API route 53 entry to use for target
+
+  hostedzonename:
+    Type: String
+    Description: Name of existing route 53 hosted zone name
+
+  stage:
+    Type: String
+    AllowedValues:
+      - dev
+      - stage
+      - prod
+    Default: dev
+    Description: stage that can be added to resource names
+
 Resources:
-  ApiGatewayApi:
+
+  Certificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Sub ${stage}.${dnsname}
+
+  DomainName:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      CertificateArn: !Ref Certificate
+      DomainName: !Sub ${stage}.${dnsname}
+
+  LambdaDNS:
+    Type: AWS::Route53::RecordSetGroup
+    Properties:
+      hostedzonename:
+        Ref: hostedzonename
+      Comment: Zone apex alias targeted to ApiGateway
+      RecordSets:
+      - Name: !Sub ${stage}.${dnsname}.
+        Type: A
+        AliasTarget:
+          HostedZoneId: Z2FDTNDATAQYW2 # This is hardcoded for all CloudFormation templates
+          dnsname: !GetAtt DomainName.DistributionDomainName
+
+  ApiGateway:
     Type: AWS::Serverless::Api
     Properties:
       DefinitionUri: ./simple-proxy-api.yaml
-      StageName: prod
+      StageName: !Ref stage
       Variables:
-        ServerlessExpressLambdaFunctionName: !Ref AwsServerlessExpressFunction
+        ServerlessExpressLambdaFunctionName: !Ref YOUR_SERVERLESS_EXPRESS_LAMBDA_FUNCTION_NAME
+  
+  UrlMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    Properties:
+      DomainName: !Ref DomainName
+      RestApiId: !Ref ApiGateway
+      Stage: !Ref stage
 
   LambdaExecutionRole:
     Type: AWS::IAM::Role
@@ -38,7 +90,7 @@ Resources:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
-      FunctionName: !GetAtt AwsServerlessExpressFunction.Arn
+      FunctionName: !GetAtt YOUR_SERVERLESS_EXPRESS_LAMBDA_FUNCTION_NAME.Arn
       Principal: apigateway.amazonaws.com
       SourceArn: !Join
         - ''
@@ -47,10 +99,10 @@ Resources:
           - ":"
           - !Ref AWS::AccountId
           - ":"
-          - !Ref ApiGatewayApi
+          - !Ref ApiGateway
           - "/*/*"
 
-  AwsServerlessExpressFunction:
+  YOUR_SERVERLESS_EXPRESS_LAMBDA_FUNCTION_NAME:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: ./
@@ -59,17 +111,20 @@ Resources:
       Role: !GetAtt LambdaExecutionRole.Arn
       Runtime: nodejs6.10
       Timeout: 30
+      Environment:
+        Variables:
+          ENVIRONMENT: !Ref stage
       Events:
         ProxyApiRoot:
           Type: Api
           Properties:
-            RestApiId: !Ref ApiGatewayApi
+            RestApiId: !Ref ApiGateway
             Path: /
             Method: ANY
         ProxyApiGreedy:
           Type: Api
           Properties:
-            RestApiId: !Ref ApiGatewayApi
+            RestApiId: !Ref ApiGateway
             Path: /{proxy+}
             Method: ANY
 
@@ -83,10 +138,10 @@ Outputs:
         - ".console.aws.amazon.com/lambda/home?region="
         - !Ref AWS::Region
         - "#/functions/"
-        - !Ref AwsServerlessExpressFunction
+        - !Ref YOUR_SERVERLESS_EXPRESS_LAMBDA_FUNCTION_NAME
 
-  ApiGatewayApiConsoleUrl:
-    Description: Console URL for the API Gateway API's Stage.
+  ApiGatewayConsoleUrl:
+    Description: Console URL for the API Gateway API's stage.
     Value: !Join
       - ''
       - - https://
@@ -94,7 +149,7 @@ Outputs:
         - ".console.aws.amazon.com/apigateway/home?region="
         - !Ref AWS::Region
         - "#/apis/"
-        - !Ref ApiGatewayApi
+        - !Ref ApiGateway
         - "/stages/prod"
 
   ApiUrl:
@@ -103,7 +158,7 @@ Outputs:
     Value: !Join
       - ''
       - - https://
-        - !Ref ApiGatewayApi
+        - !Ref ApiGateway
         - ".execute-api."
         - !Ref AWS::Region
         - ".amazonaws.com/prod/"
