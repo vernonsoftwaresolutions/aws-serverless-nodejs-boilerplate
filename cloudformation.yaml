@@ -13,7 +13,7 @@ Parameters:
     Type: String
     Description: Name of existing route 53 hosted zone name
 
-  stage:
+  cfStage:
     Type: String
     AllowedValues:
       - dev
@@ -31,31 +31,31 @@ Resources:
   Certificate:
     Type: AWS::CertificateManager::Certificate
     Properties:
-      DomainName: !Sub ${stage}.${dnsname}
+      DomainName: !Sub ${cfStage}.${dnsname}
 
   DomainName:
     Type: AWS::ApiGateway::DomainName
     Properties:
       CertificateArn: !Ref Certificate
-      DomainName: !Sub ${stage}.${dnsname}
+      DomainName: !Sub ${cfStage}.${dnsname}
 
   LambdaDNS:
     Type: AWS::Route53::RecordSetGroup
     Properties:
-      hostedzonename:
+      HostedZoneName:
         Ref: hostedzonename
       Comment: Zone apex alias targeted to ApiGateway
       RecordSets:
-      - Name: !Sub ${stage}.${dnsname}.
+      - Name: !Sub ${cfStage}.${dnsname}.
         Type: A
         AliasTarget:
           HostedZoneId: Z2FDTNDATAQYW2 # This is hardcoded for all CloudFormation templates
-          dnsname: !GetAtt DomainName.DistributionDomainName
+          DNSName: !GetAtt DomainName.DistributionDomainName
 ###############################################
 ## API GATEWAY AND LAMBDA FUNCTION DEFINITIONS
 ##
 ###############################################
-  AwsServerlessExpressFunction:
+  YOUR_SERVERLESS_EXPRESS_LAMBDA_FUNCTION_NAME:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: ./
@@ -66,7 +66,7 @@ Resources:
       Timeout: 30
       Environment:
         Variables:
-          ENVIRONMENT: !Ref stage
+          ENVIRONMENT: !Ref cfStage
       Events:
         ProxyApiRoot:
           Type: Api
@@ -85,9 +85,9 @@ Resources:
     Properties:
       DefinitionUri: ./simple-proxy-api.yaml
       #StageName: DUMMY
-      StageName: !Ref stage
+      StageName: !Ref cfStage
       Variables:
-        ServerlessExpressLambdaFunctionName: !Ref YOUR_SERVERLESS_EXPRESS_LAMBDA_FUNCTION_NAME
+        YOUR_SERVERLESS_EXPRESS_LAMBDA_FUNCTION_NAME: !Ref YOUR_SERVERLESS_EXPRESS_LAMBDA_FUNCTION_NAME
   
   UrlMapping:
     Type: AWS::ApiGateway::BasePathMapping
@@ -96,7 +96,7 @@ Resources:
     Properties:
       DomainName: !Ref DomainName
       RestApiId: !Ref ApiGateway
-      Stage: !Ref stage
+      Stage: !Ref cfStage
 
   # Deployment:
   #   Type: AWS::ApiGateway::Deployment
@@ -132,7 +132,7 @@ Resources:
     Properties:
       ApiStages:
       - ApiId: !Ref ApiGateway
-        Stage: !Ref stage
+        Stage: !Ref cfStage
       Description: Customer ABC's usage plan
       Quota:
         Limit: 5000
@@ -164,7 +164,7 @@ Resources:
       StageKeys: 
         - RestApiId: 
             Ref: ApiGateway
-          StageName: !Ref stage
+          StageName: !Ref cfStage
 ###############################################
 ## LAMBDA PERMISSION ROLES
 ##
@@ -220,26 +220,3 @@ Outputs:
         - !Ref AWS::Region
         - "#/functions/"
         - !Ref YOUR_SERVERLESS_EXPRESS_LAMBDA_FUNCTION_NAME
-
-  ApiGatewayConsoleUrl:
-    Description: Console URL for the API Gateway API's stage.
-    Value: !Join
-      - ''
-      - - https://
-        - !Ref AWS::Region
-        - ".console.aws.amazon.com/apigateway/home?region="
-        - !Ref AWS::Region
-        - "#/apis/"
-        - !Ref ApiGateway
-        - "/stages/prod"
-
-  ApiUrl:
-    Description: Invoke URL for your API. Clicking this link will perform a GET request
-      on the root resource of your API.
-    Value: !Join
-      - ''
-      - - https://
-        - !Ref ApiGateway
-        - ".execute-api."
-        - !Ref AWS::Region
-        - ".amazonaws.com/prod/"

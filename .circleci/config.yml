@@ -1,0 +1,43 @@
+version: 2
+jobs:
+  build:
+    working_directory: ~/MoodleSites
+    docker:
+      - image: circleci/node:4.8.2
+    environment:
+      - BUCKET_NAME: "moodle.sites.lambda.deployment"
+      - DEV_DNS: "sites.vssdevelopment.com"
+      - HOSTED_ZONE_NAME: "vssdevelopment.com."
+      - REGION: "us-east-1"
+      - FUNCTION_NAME: "AwsServerlessExpressFunction"
+    steps:
+      - checkout
+      - run:
+          name: update-npm
+          command: 'sudo npm install -g npm@latest'
+      - restore_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+      - run:
+          name: install-npm-wee
+          command: npm install
+      - save_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+          paths:
+            - ./node_modules
+      - run:
+          name: code-coverage
+          command: 'npm run cover'
+      - run:
+          name: configure dev environment
+          command: 'npm run config -- --account-id="${ACCOUNT_ID}" --bucket-name="${BUCKET_NAME}" --dnsname="${DEV_DNS}" --hostedzonename="${HOSTED_ZONE_NAME}" --stage="dev" --region="${REGION}" --function-name="${FUNCTION_NAME}"'
+      - run:
+          name: deploy dev environment
+          command: 'npm run setup'
+      - store_artifacts:
+          path: test-results.xml
+          prefix: tests
+      - store_artifacts:
+          path: coverage
+          prefix: coverage
+      - store_test_results:
+          path: test-results.xml
