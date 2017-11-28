@@ -1,10 +1,11 @@
 ## Todo
-Note 11/21/2017, there is a pending [bug](https://github.com/serverless/serverless/issues/2233) with 
-[Serverless Application Model (SAM)](https://github.com/awslabs/serverless-application-model) and Usage Plan's in cloudformation.  There is a work around that will be added shortly
+Note 11/21/2017, ~~there is a pending [bug](https://github.com/serverless/serverless/issues/2233) with 
+[Serverless Application Model (SAM)](https://github.com/awslabs/serverless-application-model) and Usage Plan's in cloudformation.  There is a work around that will be added shortly~~
+Update 11/27/2017  The issue has been fixed with latest commit
 
+Note 11/27/2017 An enhancement to the template is address usage plan being globla.  This means the script cannot be run for multiple environments
 ## Known Issues
-1. Based on AWS SAM bug, this template will not currently deploy until work around is implemented
-2. If Deconfigure.js is run multiple times in succession it will overrwrite some files in the Cloudformation template
+1. Can only deploy to one environment based on usage plan
 ## Example
 
 This project is based on the AWSLabs Servless project for Nodejs Express applications and AWS Lambda
