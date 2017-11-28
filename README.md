@@ -19,7 +19,7 @@ In addition to a basic Lambda function and Express server, the  project includes
 
 In additional to the awslabs boilerplate this also contains the needed cloudformation configuration to create separate environments (stages) for a CI process, integration with aws Route 53 for friendly API naming, as well as an example Usage Plan for distributing API's
 
-This required changes to the scripts [configure.js](https://github.com/vernonsoftwaresolutions/aws-serverless-nodejs-boilerplate/blob/master/scripts/configure.js) [deconfigure.js](https://github.com/vernonsoftwaresolutions/aws-serverless-nodejs-boilerplate/blob/master/scripts/deconfigure.js) [package.json](https://github.com/vernonsoftwaresolutions/aws-serverless-nodejs-boilerplate/blob/master/package.json) files to add the additional parameters (hostedzone, dnsname, and stage) to the [cloudformation template](https://github.com/vernonsoftwaresolutions/aws-serverless-nodejs-boilerplate/blob/master/cloudformation.yaml) for deployment
+This required changes to the scripts [configure.js](https://github.com/vernonsoftwaresolutions/aws-serverless-nodejs-boilerplate/blob/master/scripts/configure.js) [deconfigure.js](https://github.com/vernonsoftwaresolutions/aws-serverless-nodejs-boilerplate/blob/master/scripts/deconfigure.js) and [package.json](https://github.com/vernonsoftwaresolutions/aws-serverless-nodejs-boilerplate/blob/master/package.json) files to add the additional parameters (hostedzone, dnsname, and stage) to the [cloudformation template](https://github.com/vernonsoftwaresolutions/aws-serverless-nodejs-boilerplate/blob/master/cloudformation.yaml) for deployment
 
 ### Pre-Req's for running the example
 This guide assumes you already have
